@@ -1,0 +1,1193 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Barbearia Cavalheiro</title>
+<style>
+  :root{
+    --bg:#F5F1EA;
+    --surface:#FFFFFF;
+    --surface-2:#EFE6D4;
+    --ink:#211C17;
+    --ink-soft:#6B6255;
+    --ink-faint:#9A9184;
+    --accent:#A8461F;
+    --accent-deep:#7A2A17;
+    --accent-ink:#FFFFFF;
+    --line:#E1D6C1;
+    --good:#3F6B4A;
+    --warn:#A6791F;
+    --bad:#B23A2E;
+    --shadow: 0 18px 40px -22px rgba(33,28,23,.35);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#15120E;
+      --surface:#211B15;
+      --surface-2:#2A231B;
+      --ink:#F3ECE0;
+      --ink-soft:#B9AC98;
+      --ink-faint:#7E7364;
+      --accent:#E38C4E;
+      --accent-deep:#C86B34;
+      --accent-ink:#1B1108;
+      --line:#3A3226;
+      --good:#71AE7E;
+      --warn:#D6A94C;
+      --bad:#E07868;
+      --shadow: 0 18px 40px -20px rgba(0,0,0,.6);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15120E;
+    --surface:#211B15;
+    --surface-2:#2A231B;
+    --ink:#F3ECE0;
+    --ink-soft:#B9AC98;
+    --ink-faint:#7E7364;
+    --accent:#E38C4E;
+    --accent-deep:#C86B34;
+    --accent-ink:#1B1108;
+    --line:#3A3226;
+    --good:#71AE7E;
+    --warn:#D6A94C;
+    --bad:#E07868;
+    --shadow: 0 18px 40px -20px rgba(0,0,0,.6);
+    color-scheme: dark;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    display:flex;
+    justify-content:center;
+    padding-block: 28px;
+  }
+  h1,h2,h3{font-family:"Fraunces", Georgia, serif; text-wrap:balance; margin:0;}
+  .mono{font-family:"IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums;}
+  button{font-family:inherit; cursor:pointer;}
+  input,select,textarea{font-family:inherit; font-size:15px;}
+  a{color:inherit;}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  @media (prefers-reduced-motion: reduce){
+    *{transition-duration:0.001ms !important; animation-duration:0.001ms !important;}
+  }
+
+  .app-shell{
+    width:100%;
+    max-width:440px;
+    min-height: min(880px, 100dvh);
+    background:var(--surface);
+    border-radius:22px;
+    box-shadow:var(--shadow);
+    border:1px solid var(--line);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+
+  /* ---------- topbar ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px;
+    padding:16px 18px 12px;
+    border-bottom:1px solid var(--line);
+    background:var(--surface);
+  }
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand h1{font-size:18px; font-weight:600; letter-spacing:.2px;}
+  .brand .tagline{font-size:11px; color:var(--ink-soft); margin-top:1px;}
+  .pole{
+    width:30px; height:30px; border-radius:50%;
+    background: repeating-linear-gradient(45deg,
+      var(--accent) 0 6px,
+      var(--surface-2) 6px 12px,
+      var(--accent-deep) 12px 18px,
+      var(--surface-2) 18px 24px);
+    border:2px solid var(--ink);
+    flex:none;
+  }
+  .logo-img{
+    width:30px; height:30px; border-radius:50%; object-fit:cover; flex:none;
+    border:2px solid var(--ink);
+  }
+  .logo-upload{display:flex; align-items:center; gap:12px; margin-bottom:16px;}
+  .logo-upload .pole, .logo-upload .logo-img{width:44px; height:44px;}
+  .logo-upload-actions{display:flex; flex-direction:column; gap:6px;}
+  .file-btn{
+    display:inline-block; font-size:12.5px; font-weight:600; color:var(--accent-deep);
+    background:color-mix(in srgb, var(--accent) 14%, var(--surface));
+    border:1px solid color-mix(in srgb, var(--accent) 35%, var(--surface));
+    padding:7px 12px; border-radius:9px; cursor:pointer; width:fit-content;
+  }
+  .file-btn input{display:none;}
+  .mode-switch{
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--accent-deep);
+    background:color-mix(in srgb, var(--accent) 14%, var(--surface));
+    border:1px solid color-mix(in srgb, var(--accent) 35%, var(--surface));
+    padding:7px 10px;
+    border-radius:999px;
+    white-space:nowrap;
+  }
+
+  .view{ flex:1; overflow-y:auto; padding: 16px 18px 90px; }
+  .view.no-pad-bottom{padding-bottom:18px;}
+
+  .screen-head{margin-bottom:16px;}
+  .screen-head h2{font-size:22px; font-weight:600;}
+  .screen-head p{color:var(--ink-soft); font-size:13px; margin-top:4px;}
+
+  .back-row{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+  .icon-btn{
+    width:34px; height:34px; border-radius:50%;
+    border:1px solid var(--line); background:var(--surface);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--ink); font-size:16px; flex:none;
+  }
+  .step-title{font-size:12px; text-transform:uppercase; letter-spacing:.09em; color:var(--ink-soft); font-weight:600;}
+
+  /* ---------- buttons ---------- */
+  .btn{
+    border:none; border-radius:12px; padding:14px 18px;
+    font-size:15px; font-weight:600; width:100%;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .btn-primary{background:var(--accent); color:var(--accent-ink);}
+  .btn-primary:disabled{background:var(--surface-2); color:var(--ink-faint); cursor:not-allowed;}
+  .btn-secondary{background:var(--surface-2); color:var(--ink);}
+  .btn-ghost{background:transparent; color:var(--accent-deep); border:1px solid color-mix(in srgb, var(--accent) 40%, var(--surface));}
+  .btn-danger-ghost{background:transparent; color:var(--bad); border:1px solid color-mix(in srgb, var(--bad) 40%, var(--surface));}
+  .btn-sm{padding:9px 12px; font-size:12.5px; width:auto; border-radius:9px;}
+
+  /* ---------- cards / lists ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:16px;
+    padding:14px; margin-bottom:10px;
+  }
+  .upcoming-card{
+    background: linear-gradient(155deg, color-mix(in srgb, var(--accent) 16%, var(--surface)), var(--surface));
+    border:1px solid color-mix(in srgb, var(--accent) 30%, var(--surface));
+    border-radius:16px; padding:15px; margin-bottom:18px;
+  }
+  .upcoming-card .eyebrow{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent-deep); font-weight:700;}
+  .upcoming-card h3{font-size:17px; margin-top:4px;}
+  .upcoming-card .meta{font-size:12.5px; color:var(--ink-soft); margin-top:3px;}
+
+  .pro-card{
+    display:flex; gap:12px; align-items:center;
+    background:var(--surface); border:1px solid var(--line); border-radius:16px;
+    padding:12px; margin-bottom:10px; text-align:left; width:100%;
+  }
+  .pro-card.selected{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 8%, var(--surface));}
+  .avatar{
+    width:46px; height:46px; border-radius:50%; flex:none;
+    display:flex; align-items:center; justify-content:center;
+    font-family:"Fraunces",serif; font-weight:600; font-size:16px;
+    color:var(--accent-ink);
+  }
+  .pro-name{font-size:15px; font-weight:600;}
+  .pro-role{font-size:12px; color:var(--accent-deep); font-weight:600; margin-top:1px;}
+  .pro-spec{font-size:12px; color:var(--ink-soft); margin-top:2px;}
+  .chev{margin-left:auto; color:var(--ink-faint); font-size:16px;}
+
+  .service-card{
+    width:100%; text-align:left; background:var(--surface);
+    border:1px solid var(--line); border-radius:16px; padding:14px;
+    margin-bottom:10px;
+  }
+  .service-card.selected{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 8%, var(--surface));}
+  .service-top{display:flex; justify-content:space-between; align-items:baseline; gap:10px;}
+  .service-name{font-size:15px; font-weight:600;}
+  .service-price{font-family:"IBM Plex Mono",monospace; font-weight:600; color:var(--accent-deep); white-space:nowrap;}
+  .service-meta{font-size:12px; color:var(--ink-soft); margin-top:4px;}
+  .service-desc{font-size:12.5px; color:var(--ink-soft); margin-top:6px; line-height:1.4;}
+
+  /* ---------- date / time picker ---------- */
+  .day-row{display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:16px; scrollbar-width:none;}
+  .day-row::-webkit-scrollbar{display:none;}
+  .day-chip{
+    flex:none; width:56px; padding:10px 0; border-radius:14px;
+    background:var(--surface-2); border:1px solid var(--line);
+    text-align:center;
+  }
+  .day-chip .dow{font-size:10.5px; text-transform:uppercase; color:var(--ink-soft); letter-spacing:.05em;}
+  .day-chip .num{font-family:"IBM Plex Mono",monospace; font-size:16px; font-weight:600; margin-top:2px;}
+  .day-chip.selected{background:var(--accent); border-color:var(--accent);}
+  .day-chip.selected .dow, .day-chip.selected .num{color:var(--accent-ink);}
+
+  .slot-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px;}
+  .slot{
+    font-family:"IBM Plex Mono",monospace; font-size:13.5px; font-weight:500;
+    padding:10px 0; border-radius:10px; text-align:center;
+    background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+  }
+  .slot.selected{background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:600;}
+  .slot.occupied{background:transparent; color:var(--ink-faint); text-decoration:line-through; border-style:dashed;}
+  .empty-note{font-size:13px; color:var(--ink-soft); padding:14px 0; text-align:center;}
+
+  /* ---------- summary / review ---------- */
+  .summary-line{display:flex; justify-content:space-between; padding:8px 0; font-size:13.5px; border-bottom:1px solid var(--line);}
+  .summary-line:last-of-type{border-bottom:none;}
+  .summary-line .label{color:var(--ink-soft);}
+  .summary-line .value{font-weight:600; text-align:right;}
+  .summary-total{display:flex; justify-content:space-between; align-items:baseline; margin-top:10px; padding-top:12px; border-top:1px solid var(--line);}
+  .summary-total .amount{font-family:"IBM Plex Mono",monospace; font-size:20px; font-weight:600; color:var(--accent-deep);}
+
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em;}
+  .field textarea, .field input, .field select{
+    width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--line);
+    background:var(--surface); color:var(--ink);
+  }
+  .field textarea{resize:vertical; min-height:64px;}
+  .pay-options{display:flex; gap:8px;}
+  .pay-opt{flex:1; padding:10px 6px; border-radius:10px; border:1px solid var(--line); background:var(--surface-2); text-align:center; font-size:12.5px; font-weight:600;}
+  .pay-opt.selected{background:var(--accent); border-color:var(--accent); color:var(--accent-ink);}
+
+  .sticky-bottom{
+    position:sticky; bottom:0; left:0; right:0;
+    background:linear-gradient(to top, var(--surface) 65%, transparent);
+    padding: 16px 18px calc(16px + env(safe-area-inset-bottom,0px));
+    margin: 0 -18px -16px;
+  }
+  .sticky-bottom .row-between{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; font-size:13px; color:var(--ink-soft);}
+  .sticky-bottom .row-between b{font-family:"IBM Plex Mono",monospace; color:var(--ink); font-size:15px;}
+
+  /* ---------- success ---------- */
+  .success-wrap{display:flex; flex-direction:column; align-items:center; text-align:center; padding-top:40px;}
+  .success-badge{
+    width:72px; height:72px; border-radius:50%; background:color-mix(in srgb, var(--good) 18%, var(--surface));
+    color:var(--good); display:flex; align-items:center; justify-content:center; font-size:32px; margin-bottom:18px;
+  }
+  .success-wrap h2{font-size:21px; margin-bottom:8px;}
+  .success-wrap p{color:var(--ink-soft); font-size:13.5px; max-width:280px; line-height:1.5;}
+
+  /* ---------- bottom nav (client) ---------- */
+  .bottom-nav{
+    display:flex; border-top:1px solid var(--line); background:var(--surface);
+    padding: 6px 10px calc(6px + env(safe-area-inset-bottom,0px));
+  }
+  .nav-item{
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+    background:transparent; border:none; padding:8px 0; color:var(--ink-faint); font-size:11px; font-weight:600;
+  }
+  .nav-item.active{color:var(--accent-deep);}
+  .nav-item .ic{font-size:18px;}
+
+  /* ---------- status pills ---------- */
+  .pill{
+    display:inline-flex; align-items:center; padding:4px 9px; border-radius:999px;
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.03em;
+  }
+  .pill-confirmado{background:color-mix(in srgb, var(--good) 18%, var(--surface)); color:var(--good);}
+  .pill-pendente{background:color-mix(in srgb, var(--warn) 20%, var(--surface)); color:var(--warn);}
+  .pill-concluido{background:color-mix(in srgb, var(--ink-soft) 18%, var(--surface)); color:var(--ink-soft);}
+  .pill-cancelado{background:color-mix(in srgb, var(--bad) 18%, var(--surface)); color:var(--bad);}
+
+  /* ---------- owner ---------- */
+  .login-wrap{padding-top:26px;}
+  .login-wrap .pole{width:52px; height:52px; margin:0 auto 18px;}
+  .login-wrap h2{text-align:center; font-size:22px;}
+  .login-wrap p.sub{text-align:center; color:var(--ink-soft); font-size:13px; margin-top:6px; margin-bottom:26px;}
+  .demo-hint{
+    background:var(--surface-2); border:1px dashed var(--line); border-radius:10px;
+    padding:10px 12px; font-size:11.5px; color:var(--ink-soft); margin-top:14px; line-height:1.5;
+  }
+  .error-text{color:var(--bad); font-size:12.5px; margin-top:-6px; margin-bottom:12px;}
+
+  .owner-tabs{
+    display:flex; border-top:1px solid var(--line); background:var(--surface);
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom,0px));
+  }
+
+  .stat-row{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:18px;}
+  .stat-tile{background:var(--surface-2); border-radius:14px; padding:12px 10px;}
+  .stat-tile .n{font-family:"IBM Plex Mono",monospace; font-size:20px; font-weight:700;}
+  .stat-tile .l{font-size:10.5px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em; margin-top:2px;}
+
+  .day-nav{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .day-nav .lbl{font-weight:600; font-size:14.5px; text-transform:capitalize;}
+
+  .agenda-row{
+    display:flex; gap:12px; background:var(--surface); border:1px solid var(--line);
+    border-radius:14px; padding:12px; margin-bottom:9px; align-items:flex-start;
+  }
+  .agenda-time{font-family:"IBM Plex Mono",monospace; font-weight:700; font-size:14px; width:44px; flex:none; padding-top:2px;}
+  .agenda-body{flex:1; min-width:0;}
+  .agenda-body .svc{font-weight:600; font-size:14px;}
+  .agenda-body .meta{font-size:12px; color:var(--ink-soft); margin-top:2px;}
+  .agenda-actions{display:flex; gap:6px; margin-top:9px; flex-wrap:wrap;}
+
+  .filter-select{padding:9px 10px; border-radius:9px; border:1px solid var(--line); background:var(--surface-2); font-size:12.5px; margin-bottom:14px;}
+
+  .list-toolbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
+  .toggle-switch{
+    width:38px; height:22px; border-radius:999px; background:var(--surface-2); border:1px solid var(--line);
+    position:relative; flex:none;
+  }
+  .toggle-switch::after{
+    content:""; position:absolute; width:16px; height:16px; border-radius:50%; background:var(--ink-faint);
+    top:2px; left:2px;
+  }
+  .toggle-switch.on{background:color-mix(in srgb, var(--good) 30%, var(--surface)); border-color:var(--good);}
+  .toggle-switch.on::after{background:var(--good); left:19px;}
+
+  .entity-card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:13px; margin-bottom:10px;}
+  .entity-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+  .entity-name{font-weight:600; font-size:14.5px;}
+  .entity-sub{font-size:12px; color:var(--ink-soft); margin-top:2px;}
+  .entity-actions{display:flex; gap:14px; margin-top:10px; font-size:12.5px; font-weight:600;}
+  .link-btn{background:none; border:none; padding:0; color:var(--accent-deep);}
+  .link-btn.danger{color:var(--bad);}
+
+  .checkbox-row{display:flex; flex-wrap:wrap; gap:7px;}
+  .day-toggle{
+    width:38px; height:38px; border-radius:10px; border:1px solid var(--line); background:var(--surface-2);
+    font-size:11.5px; font-weight:700; color:var(--ink-soft);
+  }
+  .day-toggle.on{background:var(--accent); border-color:var(--accent); color:var(--accent-ink);}
+
+  .modal-overlay{
+    position:absolute; inset:0; background:rgba(15,12,8,.45); display:flex; align-items:flex-end;
+    z-index:20;
+  }
+  .modal{
+    background:var(--surface); width:100%; border-radius:20px 20px 0 0; padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px));
+    max-height:82%; overflow-y:auto;
+  }
+  .modal h3{font-size:17px; margin-bottom:14px;}
+  .modal-actions{display:flex; gap:10px; margin-top:6px;}
+
+  .toast{
+    position:absolute; left:18px; right:18px; bottom:18px;
+    background:var(--ink); color:var(--bg); padding:12px 16px; border-radius:12px;
+    font-size:13px; font-weight:600; text-align:center; box-shadow:var(--shadow);
+    z-index:30;
+  }
+  .sub-plan-card{
+    background:linear-gradient(155deg, color-mix(in srgb, var(--good) 14%, var(--surface)), var(--surface));
+    border:1px solid color-mix(in srgb, var(--good) 30%, var(--surface));
+    border-radius:14px; padding:14px; margin-bottom:18px;
+  }
+  .sub-plan-card .top{display:flex; justify-content:space-between; align-items:center;}
+  .sub-plan-card .status{color:var(--good); font-weight:700; font-size:12.5px;}
+  .divider-label{font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); font-weight:700; margin:20px 0 10px;}
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
+
+</head>
+<body>
+<div class="app-shell" id="appShell">
+  <div class="topbar" id="topbar"></div>
+  <div class="view" id="viewRoot"></div>
+  <div id="bottomArea"></div>
+  <div id="modalRoot"></div>
+  <div id="toastRoot"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============ DATA ============ */
+  const todayObj = new Date();
+  const iso = d => d.toISOString().slice(0,10);
+  const todayISO = iso(todayObj);
+
+  const DOW_SHORT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const DOW_FULL = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+
+  const settings = {
+    businessName: "Barbearia Cavalheiro",
+    address: "Rua das Tesouras, 128 — Centro",
+    phone: "(11) 98211-4470",
+    openDays: [2,3,4,5,6], // ter-sab
+    openTime: "09:00",
+    closeTime: "19:00",
+    slotInterval: 20,
+    bufferMinutes: 10,
+    minAdvanceHours: 1,
+    reminder24h: true,
+    reminder2h: true,
+    cancellationPolicy: "Cancelamentos com menos de 2 horas de antecedência podem gerar cobrança de 50% do valor do serviço.",
+    subscriptionStatus: "Ativa",
+    subscriptionNext: "05/10/2026",
+    logo: null, // data URL da logomarca, se o dono tiver enviado uma
+  };
+
+  const STORAGE_KEY = 'barbeariaCavalheiroConfig';
+  function loadPersisted(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        const saved = JSON.parse(raw);
+        if(saved.businessName) settings.businessName = saved.businessName;
+        if(saved.address) settings.address = saved.address;
+        if(saved.phone) settings.phone = saved.phone;
+        if(saved.logo) settings.logo = saved.logo;
+      }
+    }catch(e){ /* localStorage indisponível — segue com os padrões */ }
+  }
+  function persistBranding(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        businessName: settings.businessName,
+        address: settings.address,
+        phone: settings.phone,
+        logo: settings.logo,
+      }));
+    }catch(e){ /* melhor esforço — segue sem persistir */ }
+  }
+
+  let professionals = [
+    {id:'p1', name:'Diego Ramos', role:'Mestre Barbeiro', specialty:'Navalha e barba desenhada', hoursStart:'09:00', hoursEnd:'19:00', active:true, initials:'DR', color:'#7A2A17'},
+    {id:'p2', name:'Rafael Souza', role:'Barbeiro', specialty:'Degradê e cortes modernos', hoursStart:'10:00', hoursEnd:'20:00', active:true, initials:'RS', color:'#A8461F'},
+    {id:'p3', name:'Bruno Alves', role:'Barbeiro Júnior', specialty:'Cortes clássicos e infantil', hoursStart:'09:00', hoursEnd:'18:00', active:true, initials:'BA', color:'#8C5A2B'},
+  ];
+
+  let services = [
+    {id:'s1', name:'Corte Masculino', price:45, duration:40, desc:'Tesoura e máquina, acabamento na navalha.', active:true},
+    {id:'s2', name:'Barba Completa', price:35, duration:30, desc:'Toalha quente, navalha e finalização com óleo.', active:true},
+    {id:'s3', name:'Corte + Barba', price:70, duration:60, desc:'O combo clássico da casa, do início ao fim.', active:true},
+    {id:'s4', name:'Sobrancelha', price:15, duration:15, desc:'Alinhamento na navalha.', active:true},
+    {id:'s5', name:'Pigmentação de Barba', price:40, duration:30, desc:'Realça falhas e uniformiza a cor.', active:true},
+    {id:'s6', name:'Corte Infantil', price:35, duration:30, desc:'Para os pequenos cavalheiros, até 10 anos.', active:true},
+  ];
+
+  function addDays(base, n){ const d = new Date(base); d.setDate(d.getDate()+n); return d; }
+
+  let bookings = [
+    {id:'b1', professionalId:'p1', serviceId:'s1', date: iso(addDays(todayObj,1)), time:'10:00', clientName:'Você', status:'confirmado', payment:'Pix', notes:'', mine:true},
+    {id:'b2', professionalId:'p1', serviceId:'s1', date: todayISO, time:'09:00', clientName:'Marcos Lima', status:'confirmado', payment:'Cartão', notes:''},
+    {id:'b3', professionalId:'p3', serviceId:'s2', date: todayISO, time:'09:40', clientName:'Felipe Costa', status:'pendente', payment:'Dinheiro', notes:''},
+    {id:'b4', professionalId:'p2', serviceId:'s3', date: todayISO, time:'10:20', clientName:'André Nunes', status:'confirmado', payment:'Pix', notes:''},
+    {id:'b5', professionalId:'p1', serviceId:'s4', date: todayISO, time:'11:20', clientName:'Lucas Prado', status:'concluido', payment:'Dinheiro', notes:''},
+    {id:'b6', professionalId:'p2', serviceId:'s1', date: todayISO, time:'12:00', clientName:'João Vitor', status:'confirmado', payment:'Cartão', notes:''},
+  ];
+
+  let uid = 100;
+  const newId = p => p + (uid++);
+
+  /* ============ STATE ============ */
+  const state = {
+    mode: 'client',
+    ownerAuthed: false,
+    loginError: '',
+    clientStep: 'home',
+    selectedProfessionalId: null,
+    selectedServiceId: null,
+    selectedDate: null,
+    selectedTime: null,
+    reviewNotes: '',
+    payment: 'Pix',
+    clientTab: 'agendar',
+    ownerTab: 'agenda',
+    ownerAgendaDate: todayISO,
+    ownerAgendaFilter: 'all',
+    modal: null, // {type:'pro'|'service', editId}
+  };
+
+  /* ============ HELPERS ============ */
+  function money(v){ return 'R$ ' + v.toFixed(2).replace('.',','); }
+  function proById(id){ return professionals.find(p=>p.id===id); }
+  function svcById(id){ return services.find(s=>s.id===id); }
+  function fmtDateLong(dISO){
+    const d = new Date(dISO+'T00:00:00');
+    return DOW_FULL[d.getDay()] + ', ' + String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
+  }
+  function toast(msg){
+    const root = document.getElementById('toastRoot');
+    root.innerHTML = '<div class="toast">'+msg+'</div>';
+    clearTimeout(toast._t);
+    toast._t = setTimeout(()=>{ root.innerHTML=''; }, 2400);
+  }
+
+  function genOpenDates(count){
+    const out = [];
+    let d = new Date(todayObj);
+    let guard = 0;
+    while(out.length < count && guard < 40){
+      if(settings.openDays.includes(d.getDay())) out.push(new Date(d));
+      d = addDays(d,1);
+      guard++;
+    }
+    return out;
+  }
+
+  function timeToMin(t){ const [h,m] = t.split(':').map(Number); return h*60+m; }
+  function minToTime(m){ const h = Math.floor(m/60), mm = m%60; return String(h).padStart(2,'0')+':'+String(mm).padStart(2,'0'); }
+
+  function genSlots(pro, dateISO){
+    const start = Math.max(timeToMin(settings.openTime), timeToMin(pro.hoursStart));
+    const end = Math.min(timeToMin(settings.closeTime), timeToMin(pro.hoursEnd));
+    const step = settings.slotInterval;
+    const slots = [];
+    const isToday = dateISO === todayISO;
+    const nowMin = todayObj.getHours()*60 + todayObj.getMinutes() + settings.minAdvanceHours*60;
+    for(let m = start; m + 1 <= end; m += step){
+      if(isToday && m < nowMin) continue;
+      const t = minToTime(m);
+      const occupied = bookings.some(b => b.professionalId===pro.id && b.date===dateISO && b.time===t && b.status !== 'cancelado');
+      slots.push({time:t, occupied});
+    }
+    return slots;
+  }
+
+  /* ============ RENDER: TOPBAR ============ */
+  function renderTopbar(){
+    const el = document.getElementById('topbar');
+    el.innerHTML = `
+      <div class="brand">
+        ${settings.logo ? `<img class="logo-img" src="${settings.logo}">` : `<div class="pole"></div>`}
+        <div>
+          <h1>${settings.businessName}</h1>
+          <div class="tagline">Tradição e estilo, no seu horário</div>
+        </div>
+      </div>
+      <button class="mode-switch" onclick="App.switchMode()">${state.mode==='client' ? 'Área do Barbeiro' : 'Modo Cliente'}</button>
+    `;
+  }
+
+  /* ============ RENDER ROOT ============ */
+  function render(){
+    renderTopbar();
+    document.getElementById('modalRoot').innerHTML = '';
+    if(state.mode === 'client'){
+      renderClient();
+    } else {
+      renderOwner();
+    }
+  }
+
+  /* ============ CLIENT FLOW ============ */
+  function renderClient(){
+    const view = document.getElementById('viewRoot');
+    const bottom = document.getElementById('bottomArea');
+
+    if(state.clientTab === 'meus' && state.clientStep === 'home'){
+      view.innerHTML = renderMyBookings();
+      bottom.innerHTML = renderClientNav();
+      return;
+    }
+
+    switch(state.clientStep){
+      case 'home': view.innerHTML = renderClientHome(); bottom.innerHTML = renderClientNav(); break;
+      case 'service': view.innerHTML = renderClientService(); bottom.innerHTML=''; break;
+      case 'schedule': view.innerHTML = renderClientSchedule(); bottom.innerHTML=''; break;
+      case 'review': view.innerHTML = renderClientReview(); bottom.innerHTML=''; break;
+      case 'success': view.innerHTML = renderClientSuccess(); bottom.innerHTML=''; break;
+      default: view.innerHTML = renderClientHome(); bottom.innerHTML = renderClientNav();
+    }
+  }
+
+  function renderClientNav(){
+    return `<div class="bottom-nav">
+      <button class="nav-item ${state.clientTab==='agendar'?'active':''}" onclick="App.setClientTab('agendar')">
+        <span class="ic">✂️</span>Agendar
+      </button>
+      <button class="nav-item ${state.clientTab==='meus'?'active':''}" onclick="App.setClientTab('meus')">
+        <span class="ic">🗓️</span>Meus horários
+      </button>
+    </div>`;
+  }
+
+  function renderClientHome(){
+    const mine = bookings.filter(b=>b.mine && b.status!=='cancelado' && (b.date > todayISO || (b.date===todayISO)));
+    const next = mine.sort((a,b)=> (a.date+a.time).localeCompare(b.date+b.time))[0];
+    let upcoming = '';
+    if(next){
+      const pro = proById(next.professionalId), svc = svcById(next.serviceId);
+      upcoming = `<div class="upcoming-card">
+        <div class="eyebrow">Seu próximo horário</div>
+        <h3>${svc.name} com ${pro.name}</h3>
+        <div class="meta">${fmtDateLong(next.date)} às ${next.time} · <span class="pill pill-${next.status}">${next.status}</span></div>
+      </div>`;
+    }
+    return `
+      <div class="screen-head">
+        <h2>Escolha seu barbeiro</h2>
+        <p>Selecione o profissional para ver os horários disponíveis.</p>
+      </div>
+      ${upcoming}
+      ${professionals.filter(p=>p.active).map(p => `
+        <button class="pro-card ${state.selectedProfessionalId===p.id?'selected':''}" onclick="App.pickProfessional('${p.id}')">
+          <div class="avatar" style="background:${p.color}">${p.initials}</div>
+          <div>
+            <div class="pro-name">${p.name}</div>
+            <div class="pro-role">${p.role}</div>
+            <div class="pro-spec">${p.specialty}</div>
+          </div>
+          <div class="chev">›</div>
+        </button>
+      `).join('')}
+    `;
+  }
+
+  function renderMyBookings(){
+    const mine = bookings.filter(b=>b.mine).sort((a,b)=> (b.date+b.time).localeCompare(a.date+a.time));
+    return `
+      <div class="screen-head">
+        <h2>Meus horários</h2>
+        <p>Seus agendamentos na ${settings.businessName}.</p>
+      </div>
+      ${mine.length ? mine.map(b=>{
+        const pro = proById(b.professionalId), svc = svcById(b.serviceId);
+        return `<div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+            <div>
+              <div style="font-weight:600; font-size:14.5px;">${svc.name}</div>
+              <div style="font-size:12.5px; color:var(--ink-soft); margin-top:2px;">com ${pro.name}</div>
+              <div style="font-size:12.5px; color:var(--ink-soft); margin-top:2px;">${fmtDateLong(b.date)} às ${b.time}</div>
+            </div>
+            <span class="pill pill-${b.status}">${b.status}</span>
+          </div>
+          ${b.status!=='cancelado' && b.status!=='concluido' ? `<div class="entity-actions"><button class="link-btn danger" onclick="App.cancelMyBooking('${b.id}')">Cancelar</button></div>` : ''}
+        </div>`;
+      }).join('') : `<div class="empty-note">Você ainda não tem agendamentos.</div>`}
+    `;
+  }
+
+  function renderClientService(){
+    const pro = proById(state.selectedProfessionalId);
+    return `
+      <div class="back-row">
+        <button class="icon-btn" onclick="App.backTo('home')">←</button>
+        <div>
+          <div class="step-title">Passo 2 de 4</div>
+          <h2 style="font-size:18px;">Escolha o serviço</h2>
+        </div>
+      </div>
+      <p style="font-size:12.5px; color:var(--ink-soft); margin:-8px 0 14px;">com ${pro.name}</p>
+      ${services.filter(s=>s.active).map(s => `
+        <button class="service-card ${state.selectedServiceId===s.id?'selected':''}" onclick="App.pickService('${s.id}')">
+          <div class="service-top">
+            <div class="service-name">${s.name}</div>
+            <div class="service-price mono">${money(s.price)}</div>
+          </div>
+          <div class="service-meta">${s.duration} min</div>
+          <div class="service-desc">${s.desc}</div>
+        </button>
+      `).join('')}
+      <button class="btn btn-primary" style="margin-top:8px;" ${!state.selectedServiceId?'disabled':''} onclick="App.goStep('schedule')">Continuar</button>
+    `;
+  }
+
+  function renderClientSchedule(){
+    const pro = proById(state.selectedProfessionalId);
+    const svc = svcById(state.selectedServiceId);
+    if(!state.selectedDate){
+      const dates = genOpenDates(8);
+      state.selectedDate = iso(dates[0]);
+    }
+    const dates = genOpenDates(8);
+    const slots = genSlots(pro, state.selectedDate);
+    return `
+      <div class="back-row">
+        <button class="icon-btn" onclick="App.backTo('service')">←</button>
+        <div>
+          <div class="step-title">Passo 3 de 4</div>
+          <h2 style="font-size:18px;">Data e horário</h2>
+        </div>
+      </div>
+      <div class="day-row">
+        ${dates.map(d=>{
+          const dISO = iso(d);
+          return `<button class="day-chip ${state.selectedDate===dISO?'selected':''}" onclick="App.pickDate('${dISO}')">
+            <div class="dow">${DOW_SHORT[d.getDay()]}</div>
+            <div class="num">${String(d.getDate()).padStart(2,'0')}</div>
+          </button>`;
+        }).join('')}
+      </div>
+      ${slots.length ? `<div class="slot-grid">
+        ${slots.map(s => `<button class="slot ${state.selectedTime===s.time?'selected':''} ${s.occupied?'occupied':''}" ${s.occupied?'disabled':''} onclick="App.pickTime('${s.time}')">${s.time}</button>`).join('')}
+      </div>` : `<div class="empty-note">Sem horários disponíveis nesta data.</div>`}
+      <div class="sticky-bottom">
+        <div class="row-between"><span>${svc.name} · ${svc.duration} min</span><b>${money(svc.price)}</b></div>
+        <button class="btn btn-primary" ${!state.selectedTime?'disabled':''} onclick="App.goStep('review')">Continuar</button>
+      </div>
+    `;
+  }
+
+  function renderClientReview(){
+    const pro = proById(state.selectedProfessionalId);
+    const svc = svcById(state.selectedServiceId);
+    return `
+      <div class="back-row">
+        <button class="icon-btn" onclick="App.backTo('schedule')">←</button>
+        <div>
+          <div class="step-title">Passo 4 de 4</div>
+          <h2 style="font-size:18px;">Revisar e confirmar</h2>
+        </div>
+      </div>
+      <div class="card">
+        <div class="summary-line"><span class="label">Profissional</span><span class="value">${pro.name}</span></div>
+        <div class="summary-line"><span class="label">Serviço</span><span class="value">${svc.name}</span></div>
+        <div class="summary-line"><span class="label">Data</span><span class="value">${fmtDateLong(state.selectedDate)}</span></div>
+        <div class="summary-line"><span class="label">Horário</span><span class="value">${state.selectedTime}</span></div>
+        <div class="summary-line"><span class="label">Duração</span><span class="value">${svc.duration} min</span></div>
+        <div class="summary-total"><span>Total</span><span class="amount">${money(svc.price)}</span></div>
+      </div>
+      <div class="field">
+        <label>Observações (opcional)</label>
+        <textarea id="notesInput" placeholder="Ex: prefiro máquina 1 nas laterais" oninput="App.setNotes(this.value)">${state.reviewNotes}</textarea>
+      </div>
+      <div class="field">
+        <label>Forma de pagamento</label>
+        <div class="pay-options">
+          ${['Pix','Cartão','Dinheiro'].map(p=>`<button class="pay-opt ${state.payment===p?'selected':''}" onclick="App.setPayment('${p}')">${p}</button>`).join('')}
+        </div>
+      </div>
+      <div class="sticky-bottom">
+        <button class="btn btn-primary" onclick="App.confirmBooking()">Confirmar agendamento</button>
+        <button class="btn btn-secondary" style="margin-top:8px;" onclick="App.backTo('schedule')">Voltar e editar</button>
+      </div>
+    `;
+  }
+
+  function renderClientSuccess(){
+    return `
+      <div class="success-wrap">
+        <div class="success-badge">✓</div>
+        <h2>Agendamento confirmado!</h2>
+        <p>Você receberá uma confirmação e um lembrete antes do seu horário. Até breve na ${settings.businessName}!</p>
+        <button class="btn btn-primary" style="margin-top:26px;" onclick="App.finishBooking()">Voltar ao início</button>
+      </div>
+    `;
+  }
+
+  /* ============ OWNER: LOGIN ============ */
+  function renderOwner(){
+    const view = document.getElementById('viewRoot');
+    const bottom = document.getElementById('bottomArea');
+    if(!state.ownerAuthed){
+      view.innerHTML = renderOwnerLogin();
+      bottom.innerHTML = '';
+      return;
+    }
+    let body = '';
+    switch(state.ownerTab){
+      case 'agenda': body = renderOwnerAgenda(); break;
+      case 'pros': body = renderOwnerPros(); break;
+      case 'services': body = renderOwnerServices(); break;
+      case 'settings': body = renderOwnerSettings(); break;
+      default: body = renderOwnerAgenda();
+    }
+    view.innerHTML = body;
+    bottom.innerHTML = renderOwnerTabs();
+    if(state.modal) renderModal();
+  }
+
+  function renderOwnerTabs(){
+    const tabs = [
+      {k:'agenda', ic:'📋', l:'Agenda'},
+      {k:'pros', ic:'🧔', l:'Profissionais'},
+      {k:'services', ic:'💈', l:'Serviços'},
+      {k:'settings', ic:'⚙️', l:'Config'},
+    ];
+    return `<div class="owner-tabs">
+      ${tabs.map(t=>`<button class="nav-item ${state.ownerTab===t.k?'active':''}" onclick="App.setOwnerTab('${t.k}')"><span class="ic">${t.ic}</span>${t.l}</button>`).join('')}
+    </div>`;
+  }
+
+  function renderOwnerLogin(){
+    return `
+      <div class="login-wrap">
+        ${settings.logo ? `<img class="logo-img" src="${settings.logo}" style="width:52px;height:52px;margin:0 auto 18px;display:block;">` : `<div class="pole"></div>`}
+        <h2>Área do Barbeiro</h2>
+        <p class="sub">Entre para gerenciar agenda, equipe e serviços.</p>
+        <div class="field">
+          <label>E-mail</label>
+          <input id="loginEmail" type="email" placeholder="voce@cavalheiro.com" value="dono@cavalheiro.com">
+        </div>
+        <div class="field">
+          <label>Senha</label>
+          <input id="loginPass" type="password" placeholder="••••••••" value="barbearia123">
+        </div>
+        ${state.loginError ? `<div class="error-text">${state.loginError}</div>` : ''}
+        <button class="btn btn-primary" onclick="App.ownerLogin()">Entrar</button>
+        <div class="demo-hint">Demonstração — use dono@cavalheiro.com / barbearia123 (já preenchido).</div>
+      </div>
+    `;
+  }
+
+  /* ============ OWNER: AGENDA ============ */
+  function renderOwnerAgenda(){
+    const dateBookings = bookings.filter(b => b.date === state.ownerAgendaDate && (state.ownerAgendaFilter==='all' || b.professionalId===state.ownerAgendaFilter))
+      .sort((a,b)=> a.time.localeCompare(b.time));
+    const revenue = dateBookings.filter(b=>b.status!=='cancelado').reduce((s,b)=> s + svcById(b.serviceId).price, 0);
+    const confirmedCount = dateBookings.filter(b=>b.status==='confirmado' || b.status==='concluido').length;
+
+    return `
+      <div class="screen-head">
+        <h2 style="font-size:20px;">Agenda</h2>
+        <p>Acompanhe os atendimentos do dia.</p>
+      </div>
+      <div class="stat-row">
+        <div class="stat-tile"><div class="n">${dateBookings.length}</div><div class="l">Agendamentos</div></div>
+        <div class="stat-tile"><div class="n">${confirmedCount}</div><div class="l">Confirmados</div></div>
+        <div class="stat-tile"><div class="n mono">${money(revenue)}</div><div class="l">Receita prevista</div></div>
+      </div>
+      <div class="day-nav">
+        <button class="icon-btn" onclick="App.shiftAgendaDay(-1)">←</button>
+        <div class="lbl">${fmtDateLong(state.ownerAgendaDate)}</div>
+        <button class="icon-btn" onclick="App.shiftAgendaDay(1)">→</button>
+      </div>
+      <select class="filter-select" onchange="App.setAgendaFilter(this.value)">
+        <option value="all" ${state.ownerAgendaFilter==='all'?'selected':''}>Todos os profissionais</option>
+        ${professionals.map(p=>`<option value="${p.id}" ${state.ownerAgendaFilter===p.id?'selected':''}>${p.name}</option>`).join('')}
+      </select>
+      ${dateBookings.length ? dateBookings.map(b=>{
+        const pro = proById(b.professionalId), svc = svcById(b.serviceId);
+        return `<div class="agenda-row">
+          <div class="agenda-time mono">${b.time}</div>
+          <div class="agenda-body">
+            <div class="svc">${svc.name} <span class="pill pill-${b.status}" style="margin-left:6px;">${b.status}</span></div>
+            <div class="meta">${b.clientName} · ${pro.name}</div>
+            <div class="agenda-actions">
+              ${b.status==='pendente' ? `<button class="btn btn-sm btn-primary" onclick="App.setBookingStatus('${b.id}','confirmado')">Confirmar</button>` : ''}
+              ${b.status==='confirmado' ? `<button class="btn btn-sm btn-secondary" onclick="App.setBookingStatus('${b.id}','concluido')">Concluir</button>` : ''}
+              ${b.status!=='cancelado' && b.status!=='concluido' ? `<button class="btn btn-sm btn-danger-ghost" onclick="App.setBookingStatus('${b.id}','cancelado')">Cancelar</button>` : ''}
+            </div>
+          </div>
+        </div>`;
+      }).join('') : `<div class="empty-note">Nenhum agendamento para este dia.</div>`}
+    `;
+  }
+
+  /* ============ OWNER: PROFESSIONALS ============ */
+  function renderOwnerPros(){
+    return `
+      <div class="list-toolbar">
+        <div class="screen-head" style="margin-bottom:0;">
+          <h2 style="font-size:20px;">Profissionais</h2>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="App.openProModal(null)">+ Adicionar</button>
+      </div>
+      ${professionals.map(p=>`
+        <div class="entity-card">
+          <div class="entity-top">
+            <div style="display:flex; gap:10px; align-items:center;">
+              <div class="avatar" style="width:38px;height:38px;font-size:13px;background:${p.color}">${p.initials}</div>
+              <div>
+                <div class="entity-name">${p.name}</div>
+                <div class="entity-sub">${p.role} · ${p.specialty}</div>
+                <div class="entity-sub">${p.hoursStart} – ${p.hoursEnd}</div>
+              </div>
+            </div>
+            <div class="toggle-switch ${p.active?'on':''}" onclick="App.toggleProActive('${p.id}')"></div>
+          </div>
+          <div class="entity-actions">
+            <button class="link-btn" onclick="App.openProModal('${p.id}')">Editar</button>
+            <button class="link-btn danger" onclick="App.deletePro('${p.id}')">Excluir</button>
+          </div>
+        </div>
+      `).join('')}
+    `;
+  }
+
+  /* ============ OWNER: SERVICES ============ */
+  function renderOwnerServices(){
+    return `
+      <div class="list-toolbar">
+        <div class="screen-head" style="margin-bottom:0;">
+          <h2 style="font-size:20px;">Serviços</h2>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="App.openServiceModal(null)">+ Adicionar</button>
+      </div>
+      ${services.map(s=>`
+        <div class="entity-card">
+          <div class="entity-top">
+            <div>
+              <div class="entity-name">${s.name} <span class="mono" style="color:var(--accent-deep); font-weight:600;">· ${money(s.price)}</span></div>
+              <div class="entity-sub">${s.duration} min</div>
+              <div class="entity-sub">${s.desc}</div>
+            </div>
+            <div class="toggle-switch ${s.active?'on':''}" onclick="App.toggleServiceActive('${s.id}')"></div>
+          </div>
+          <div class="entity-actions">
+            <button class="link-btn" onclick="App.openServiceModal('${s.id}')">Editar</button>
+            <button class="link-btn danger" onclick="App.deleteService('${s.id}')">Excluir</button>
+          </div>
+        </div>
+      `).join('')}
+    `;
+  }
+
+  /* ============ OWNER: SETTINGS ============ */
+  function renderOwnerSettings(){
+    return `
+      <div class="screen-head">
+        <h2 style="font-size:20px;">Configurações</h2>
+        <p>Dados do negócio, horários e lembretes.</p>
+      </div>
+
+      <div class="sub-plan-card">
+        <div class="top">
+          <div>
+            <div style="font-weight:600; font-size:14px;">Assinatura da barbearia</div>
+            <div class="entity-sub">Próxima cobrança em ${settings.subscriptionNext}</div>
+          </div>
+          <div class="status">${settings.subscriptionStatus}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:12px;" onclick="App.toast('Gerenciamento de assinatura — em breve.')">Gerenciar assinatura</button>
+      </div>
+
+      <div class="divider-label">Dados do negócio</div>
+      <div class="logo-upload">
+        ${settings.logo ? `<img class="logo-img" src="${settings.logo}">` : `<div class="pole"></div>`}
+        <div class="logo-upload-actions">
+          <label class="file-btn">Trocar logomarca<input type="file" accept="image/*" onchange="App.uploadLogo(this)"></label>
+          ${settings.logo ? `<button class="link-btn danger" style="text-align:left;" onclick="App.removeLogo()">Remover logomarca</button>` : ''}
+        </div>
+      </div>
+      <div class="field"><label>Nome</label><input id="setBusinessName" value="${settings.businessName}"></div>
+      <div class="field"><label>Endereço</label><input id="setAddress" value="${settings.address}"></div>
+      <div class="field"><label>Telefone</label><input id="setPhone" value="${settings.phone}"></div>
+
+      <div class="divider-label">Horário de funcionamento</div>
+      <div class="checkbox-row" style="margin-bottom:12px;">
+        ${DOW_SHORT.map((d,i)=>`<button class="day-toggle ${settings.openDays.includes(i)?'on':''}" onclick="App.toggleOpenDay(${i})">${d}</button>`).join('')}
+      </div>
+      <div style="display:flex; gap:10px;">
+        <div class="field" style="flex:1;"><label>Abre às</label><input id="setOpen" type="time" value="${settings.openTime}"></div>
+        <div class="field" style="flex:1;"><label>Fecha às</label><input id="setClose" type="time" value="${settings.closeTime}"></div>
+      </div>
+
+      <div class="divider-label">Agendamento</div>
+      <div class="field">
+        <label>Intervalo entre horários</label>
+        <select id="setInterval">
+          ${[15,20,30,40,60].map(v=>`<option value="${v}" ${settings.slotInterval===v?'selected':''}>${v} minutos</option>`).join('')}
+        </select>
+      </div>
+      <div class="field">
+        <label>Antecedência mínima para agendar</label>
+        <select id="setMinAdvance">
+          ${[0,1,2,4,24].map(v=>`<option value="${v}" ${settings.minAdvanceHours===v?'selected':''}>${v===0?'Sem restrição':v+' hora(s)'}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field">
+        <label>Política de cancelamento</label>
+        <textarea id="setCancelPolicy">${settings.cancellationPolicy}</textarea>
+      </div>
+
+      <div class="divider-label">Lembretes automáticos</div>
+      <div class="entity-card" style="display:flex; justify-content:space-between; align-items:center;">
+        <div><div class="entity-name" style="font-size:13.5px;">Lembrete 24h antes</div><div class="entity-sub">Envia mensagem com opção de confirmar ou remarcar</div></div>
+        <div class="toggle-switch ${settings.reminder24h?'on':''}" onclick="App.toggleSetting('reminder24h')"></div>
+      </div>
+      <div class="entity-card" style="display:flex; justify-content:space-between; align-items:center;">
+        <div><div class="entity-name" style="font-size:13.5px;">Lembrete 2h antes</div><div class="entity-sub">Enviado apenas se o cliente já confirmou</div></div>
+        <div class="toggle-switch ${settings.reminder2h?'on':''}" onclick="App.toggleSetting('reminder2h')"></div>
+      </div>
+
+      <button class="btn btn-primary" style="margin-top:18px;" onclick="App.saveSettings()">Salvar alterações</button>
+      <button class="btn btn-secondary" style="margin-top:10px;" onclick="App.ownerLogout()">Sair</button>
+    `;
+  }
+
+  /* ============ MODAL ============ */
+  function renderModal(){
+    const root = document.getElementById('modalRoot');
+    if(!state.modal){ root.innerHTML=''; return; }
+    if(state.modal.type === 'pro'){
+      const p = state.modal.editId ? proById(state.modal.editId) : {name:'',role:'',specialty:'',hoursStart:'09:00',hoursEnd:'19:00',initials:'',color:'#A8461F'};
+      root.innerHTML = `<div class="modal-overlay" onclick="if(event.target===this)App.closeModal()">
+        <div class="modal">
+          <h3>${state.modal.editId ? 'Editar profissional' : 'Novo profissional'}</h3>
+          <div class="field"><label>Nome</label><input id="mProName" value="${p.name}"></div>
+          <div class="field"><label>Cargo</label><input id="mProRole" value="${p.role}" placeholder="Ex: Barbeiro"></div>
+          <div class="field"><label>Especialidade</label><input id="mProSpecialty" value="${p.specialty}"></div>
+          <div style="display:flex; gap:10px;">
+            <div class="field" style="flex:1;"><label>Início</label><input id="mProStart" type="time" value="${p.hoursStart}"></div>
+            <div class="field" style="flex:1;"><label>Fim</label><input id="mProEnd" type="time" value="${p.hoursEnd}"></div>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="App.closeModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="App.saveProModal()">Salvar</button>
+          </div>
+        </div>
+      </div>`;
+    } else if(state.modal.type === 'service'){
+      const s = state.modal.editId ? svcById(state.modal.editId) : {name:'',price:0,duration:30,desc:''};
+      root.innerHTML = `<div class="modal-overlay" onclick="if(event.target===this)App.closeModal()">
+        <div class="modal">
+          <h3>${state.modal.editId ? 'Editar serviço' : 'Novo serviço'}</h3>
+          <div class="field"><label>Nome</label><input id="mSvcName" value="${s.name}"></div>
+          <div style="display:flex; gap:10px;">
+            <div class="field" style="flex:1;"><label>Preço (R$)</label><input id="mSvcPrice" type="number" step="0.01" value="${s.price}"></div>
+            <div class="field" style="flex:1;"><label>Duração (min)</label><input id="mSvcDuration" type="number" value="${s.duration}"></div>
+          </div>
+          <div class="field"><label>Descrição</label><textarea id="mSvcDesc">${s.desc}</textarea></div>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="App.closeModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="App.saveServiceModal()">Salvar</button>
+          </div>
+        </div>
+      </div>`;
+    }
+  }
+
+  /* ============ APP ACTIONS ============ */
+  const App = {
+    toast,
+    switchMode(){
+      state.mode = state.mode==='client' ? 'owner' : 'client';
+      render();
+    },
+    setClientTab(tab){ state.clientTab = tab; state.clientStep='home'; render(); },
+    pickProfessional(id){
+      state.selectedProfessionalId = id;
+      state.selectedServiceId = null;
+      state.selectedDate = null;
+      state.selectedTime = null;
+      state.clientStep = 'service';
+      render();
+    },
+    pickService(id){ state.selectedServiceId = id; render(); },
+    pickDate(d){ state.selectedDate = d; state.selectedTime = null; render(); },
+    pickTime(t){ state.selectedTime = t; render(); },
+    setNotes(v){ state.reviewNotes = v; },
+    setPayment(p){ state.payment = p; render(); },
+    goStep(step){ state.clientStep = step; render(); },
+    backTo(step){ state.clientStep = step; render(); },
+    confirmBooking(){
+      bookings.push({
+        id: newId('b'), professionalId: state.selectedProfessionalId, serviceId: state.selectedServiceId,
+        date: state.selectedDate, time: state.selectedTime, clientName:'Você', status:'confirmado',
+        payment: state.payment, notes: state.reviewNotes, mine:true
+      });
+      state.clientStep = 'success';
+      render();
+    },
+    finishBooking(){
+      state.clientStep='home'; state.selectedProfessionalId=null; state.selectedServiceId=null;
+      state.selectedDate=null; state.selectedTime=null; state.reviewNotes=''; state.payment='Pix';
+      state.clientTab='agendar';
+      render();
+    },
+    cancelMyBooking(id){
+      const b = bookings.find(x=>x.id===id);
+      if(b){ b.status='cancelado'; toast('Agendamento cancelado.'); }
+      render();
+    },
+    ownerLogin(){
+      const email = document.getElementById('loginEmail').value.trim();
+      const pass = document.getElementById('loginPass').value.trim();
+      if(email === 'dono@cavalheiro.com' && pass === 'barbearia123'){
+        state.ownerAuthed = true; state.loginError=''; state.ownerTab='agenda';
+      } else {
+        state.loginError = 'E-mail ou senha incorretos.';
+      }
+      render();
+    },
+    ownerLogout(){ state.ownerAuthed = false; state.mode='client'; render(); },
+    setOwnerTab(t){ state.ownerTab = t; render(); },
+    shiftAgendaDay(n){
+      state.ownerAgendaDate = iso(addDays(new Date(state.ownerAgendaDate+'T00:00:00'), n));
+      render();
+    },
+    setAgendaFilter(v){ state.ownerAgendaFilter = v; render(); },
+    setBookingStatus(id, status){
+      const b = bookings.find(x=>x.id===id);
+      if(b) b.status = status;
+      toast('Status atualizado para "' + status + '".');
+      render();
+    },
+    toggleProActive(id){ const p = proById(id); p.active = !p.active; render(); },
+    deletePro(id){ professionals = professionals.filter(p=>p.id!==id); toast('Profissional removido.'); render(); },
+    openProModal(editId){ state.modal = {type:'pro', editId}; render(); },
+    toggleServiceActive(id){ const s = svcById(id); s.active = !s.active; render(); },
+    deleteService(id){ services = services.filter(s=>s.id!==id); toast('Serviço removido.'); render(); },
+    openServiceModal(editId){ state.modal = {type:'service', editId}; render(); },
+    closeModal(){ state.modal = null; render(); },
+    saveProModal(){
+      const name = document.getElementById('mProName').value.trim() || 'Sem nome';
+      const role = document.getElementById('mProRole').value.trim();
+      const specialty = document.getElementById('mProSpecialty').value.trim();
+      const hoursStart = document.getElementById('mProStart').value || '09:00';
+      const hoursEnd = document.getElementById('mProEnd').value || '19:00';
+      const initials = name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+      if(state.modal.editId){
+        const p = proById(state.modal.editId);
+        Object.assign(p, {name, role, specialty, hoursStart, hoursEnd, initials});
+        toast('Profissional atualizado.');
+      } else {
+        professionals.push({id:newId('p'), name, role, specialty, hoursStart, hoursEnd, active:true, initials, color:'#A8461F'});
+        toast('Profissional adicionado.');
+      }
+      state.modal = null;
+      render();
+    },
+    saveServiceModal(){
+      const name = document.getElementById('mSvcName').value.trim() || 'Sem nome';
+      const price = parseFloat(document.getElementById('mSvcPrice').value) || 0;
+      const duration = parseInt(document.getElementById('mSvcDuration').value) || 30;
+      const desc = document.getElementById('mSvcDesc').value.trim();
+      if(state.modal.editId){
+        const s = svcById(state.modal.editId);
+        Object.assign(s, {name, price, duration, desc});
+        toast('Serviço atualizado.');
+      } else {
+        services.push({id:newId('s'), name, price, duration, desc, active:true});
+        toast('Serviço adicionado.');
+      }
+      state.modal = null;
+      render();
+    },
+    uploadLogo(inputEl){
+      const file = inputEl.files && inputEl.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        settings.logo = reader.result;
+        persistBranding();
+        toast('Logomarca atualizada.');
+        render();
+      };
+      reader.readAsDataURL(file);
+    },
+    removeLogo(){
+      settings.logo = null;
+      persistBranding();
+      toast('Logomarca removida.');
+      render();
+    },
+    toggleOpenDay(i){
+      const idx = settings.openDays.indexOf(i);
+      if(idx>=0) settings.openDays.splice(idx,1); else settings.openDays.push(i);
+      render();
+    },
+    toggleSetting(key){ settings[key] = !settings[key]; render(); },
+    saveSettings(){
+      settings.businessName = document.getElementById('setBusinessName').value.trim() || settings.businessName;
+      settings.address = document.getElementById('setAddress').value.trim();
+      settings.phone = document.getElementById('setPhone').value.trim();
+      settings.openTime = document.getElementById('setOpen').value || settings.openTime;
+      settings.closeTime = document.getElementById('setClose').value || settings.closeTime;
+      settings.slotInterval = parseInt(document.getElementById('setInterval').value);
+      settings.minAdvanceHours = parseInt(document.getElementById('setMinAdvance').value);
+      settings.cancellationPolicy = document.getElementById('setCancelPolicy').value.trim();
+      persistBranding();
+      toast('Configurações salvas.');
+      render();
+    },
+  };
+
+  window.App = App;
+  loadPersisted();
+  render();
+})();
+</script>
+</body>
+</html>
